@@ -1,11 +1,12 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Crown, Twitter, Trophy, ScrollText, ExternalLink, ArrowDownCircle, Bot, Cpu, Gem, Zap, Rocket, TrendingUp, Star, Coins, Wallet, HandHeart } from 'lucide-react'
+import { Crown, Trophy, ScrollText, ExternalLink, ArrowDownCircle, Bot, Zap, Rocket } from 'lucide-react'
 import { toast, Toaster } from "sonner";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -96,7 +97,7 @@ export default function Home() {
         const { width, height } = containerRect
 
         // Use a mutable copy for complex physics calculations
-        let newTokens = structuredClone(prevTokens)
+        const newTokens = structuredClone(prevTokens)
 
         // 1. Inter-token collision pass
         for (let i = 0; i < newTokens.length; i++) {
@@ -110,7 +111,7 @@ export default function Home() {
             const minDistance = tokenA.radius + tokenB.radius
 
             if (distance < minDistance) {
-              const angle = Math.atan2(dy, dx)
+              
               const normalX = dx / distance
               const normalY = dy / distance
 
@@ -142,7 +143,8 @@ export default function Home() {
         
         // 2. Update pass (mouse, walls, position)
         return newTokens.map(token => {
-          let { x, y, vx, vy, rotation, scale, targetScale, rotationSpeed } = token
+          let { x, y, vx, vy, rotation, scale } = token
+const { targetScale, rotationSpeed } = token
 
           // Mouse Repulsion
           const dxMouse = x - mousePosition.x
@@ -356,13 +358,14 @@ export default function Home() {
         
         
         {/* Token image */}
-        <img
-          src={`/mmw-logos/${token.image}`}
-          alt="Token"
-          className="w-full h-full object-cover rounded-full border-2 border-white/20 hover:border-purple-400/60 transition-all duration-300"
-          draggable={false}
-          
-        />
+        <Image
+  src={`/mmw-logos/${token.image}`}
+  alt="Token"
+  width={token.radius * 2}
+  height={token.radius * 2}
+  className="w-full h-full object-cover rounded-full border-2 border-white/20 hover:border-purple-400/60 transition-all duration-300"
+  draggable={false}
+/>
         
       </div>
     ))}
@@ -420,14 +423,14 @@ export default function Home() {
                 </div>
                 
                 <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-zinc-400 to-orange-400 bg-clip-text text-transparent">
-                  Got Dead Coins? We'll Take 'Em! 
+                Got Dead Coins? We&apos;ll Take &apos;Em!
                 </h3>
                 
                 <p className="mb-3 text-lg text-gray-300">
                   Send us your rugged, dumped, or forgotten Solana tokens
                 </p>
                 <p className="mb-6 text-sm text-gray-400">
-                  Every shitcoin tells a story. Let's collect them all and reach 1M tokens!
+                Every shitcoin tells a story. Let&apos;s collect them all and reach 1M tokens!
                 </p>
                 
                 <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 group">
@@ -646,7 +649,7 @@ export default function Home() {
           
                               title: "Top Bag Holders",
           
-                              description: "Leaderboard of the biggest losers who've contributed the most dead coins. Wear your L's with pride!",
+                              description: "Leaderboard of the biggers donors who contributed the most dead coins. Wear your L with pride!",
           
                               icon: Trophy,
           
