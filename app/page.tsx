@@ -474,7 +474,7 @@ const { targetScale, rotationSpeed } = token
                       />
                     </div>
                     <p className="text-sm text-gray-500">
-                      {((data.totalTokens / 1000000) * 100).toFixed(2)}% Complete - Keep 'em coming! 🔥
+                      {((data.totalTokens / 1000000) * 100).toFixed(2)}% Complete - Keep &apos;em coming! 🔥
                     </p>
                   </div>
                 ) : error ? (
