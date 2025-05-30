@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Million Memes Wallet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Knewave&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            font-family: 'Knewave', cursive;
+            text-align: center;
+            font-size: 3rem;
+            color: #27ae60;
+        }
+
+        .description {
+            text-align: center;
+            margin-top: -1rem;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .wallet, .king, .tokens, .footer {
+            max-width: 800px;
+            margin: 1rem auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .wallet-address {
+            font-weight: bold;
+            word-break: break-word;
+            color: #16a085;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress {
+            max-width: 800px;
+            margin: 1rem auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 3px solid #27ae60;
+            box-shadow: 0 0 8px rgba(39, 174, 96, 0.3);
+        }
+
+        .progress-count {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 1rem 0;
+        }
+
+        .king-content {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .token-list-container {
+            position: relative;
+        }
+
+        .token-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border-top: 1px solid #ccc;
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.5rem;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-hint.hidden {
+            opacity: 0;
+        }
+
+        .token {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .token-name {
+            font-weight: bold;
+        }
+
+        .footer p {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        .error {
+            text-align: center;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .last-updated {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 1rem;
+        }
+
+        .coming-soon {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .coming-soon h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .coming-soon > p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #27ae60;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h4 {
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .feature-status {
+            background: #27ae60;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .feature-card:nth-child(2) .feature-status {
+            background: #f39c12;
+        }
+
+        .feature-card:nth-child(3) .feature-status {
+            background: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Million Memes Wallet</h1>
+<p class="description">1 wallet. 1 million memes.</p>
+
+<div class="wallet">
+    <p style="text-align:center;">Got a dead coin? A meme with no dream?</p>
+    <p style="text-align:center;">Don’t let it rot. Every token counts toward our goal of 1,000,000 memes.</p>
+    <p class="wallet-address">Hk2QZxhc4a6orkywKPNCJDxGnoxXYjMWUCmqBgsEiGJG</p>
+</div>
+
+<div class="progress">
+    <div class="progress-count" id="progress-count">Loading...</div>
+</div>
+
+<!--Coming soon-->
+<!--<div class="king">-->
+<!--    <h3>👑 King of the Wallet</h3>-->
+<!--    <div class="king-content" id="king-content">Loading king token...</div>-->
+<!--</div>-->
+
+<div class="tokens">
+    <h4>💰 Meme Collection</h4>
+    <div class="token-list-container">
+        <div class="token-list" id="token-list">
+            <div class="loading">Loading tokens...</div>
+        </div>
+    </div>
+    <div class="scroll-hint" id="scroll-hint">💡 Tip: Scroll through the list to see all meme tokens!</div>
+</div>
+
+<div class="coming-soon">
+    <h3>What's Coming Next</h3>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">👑</div>
+            <h4>King of the Wallet</h4>
+            <p>See which token rules them all! We'll crown the meme with the highest USD value (amount × price) as the true king of our collection.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📰</div>
+            <h4>Twitter Bot</h4>
+            <p>Our bot will automatically tweet when fresh tokens join the wallet: "PEPE entered the Million Memes Wallet, welcome!" plus live progress updates.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h4>Top Contributors</h4>
+            <p>Honor the meme lords! A leaderboard showcasing the most generous addresses who've contributed the most tokens to our legendary collection.</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Running this thing ain't free — if you're enjoying it, toss us a meme or two 💸</p>
+    <p class="wallet-address">Hk2QZxhc4a6orkywKPNCJDxGnoxXYjMWUCmqBgsEiGJG</p>
+    <p>Follow the journey <a href="https://x.com/MemesTo1M" target="_blank" style="color: #1DA1F2; text-decoration: none;">🐦 @MemesTo1M</a></p>
+    <div class="last-updated" id="last-updated"></div>
+</div>
+
+<script>
+    // Use relative URL since frontend and API are on the same domain
+    const API_URL = '/api/tokens';
+
+    function updateScrollIndicators() {
+        const tokenList = document.getElementById('token-list');
+        const scrollHint = document.getElementById('scroll-hint');
+
+        if (tokenList.scrollHeight > tokenList.clientHeight) {
+            if (tokenList.scrollTop > 0) {
+                scrollHint.classList.add('hidden');
+            }
+        } else {
+            scrollHint.classList.add('hidden');
+        }
+    }
+
+    async function fetchTokens() {
+        try {
+            console.log('Fetching tokens from:', API_URL);
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+
+            // Update progress count
+            const total = data.totalTokens || 0;
+            const max = 1000000;
+            const progressCount = document.getElementById('progress-count');
+            progressCount.textContent = `${total.toLocaleString()} / ${max.toLocaleString()}`;
+
+            // Update king token
+          //   const kingContent = document.getElementById('king-content');
+          //   if (data.king) {
+          //       kingContent.innerHTML = `
+          //   <div>${data.king.name || 'Unknown Token'}</div>
+          //   <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+          //     ${data.king.amount ? data.king.amount.toLocaleString() : '0'} ${data.king.symbol || ''}
+          //   </div>
+          // `;
+          //   } else if (kingContent) {
+          //       kingContent.textContent = 'No tokens found';
+          //   }
+
+            // Update token list
+            const tokenList = document.getElementById('token-list');
+            tokenList.innerHTML = '';
+
+            if (data.tokens && data.tokens.length > 0) {
+                data.tokens.forEach(token => {
+                    const tokenItem = document.createElement('div');
+                    tokenItem.className = 'token';
+                    tokenItem.innerHTML = `
+              <span class="token-name">${token.name || 'Unknown'} ${token.symbol ? `(${token.symbol})` : ''}</span>
+              <span>${token.amount ? token.amount.toLocaleString() : '0'}</span>
+            `;
+                    tokenList.appendChild(tokenItem);
+                });
+
+                // Add scroll event listener
+                tokenList.addEventListener('scroll', updateScrollIndicators);
+
+                // Check if scroll indicators should be shown
+                setTimeout(updateScrollIndicators, 100);
+            } else {
+                tokenList.innerHTML = '<div class="loading">No tokens found</div>';
+            }
+
+            // Update last updated time
+            const lastUpdated = document.getElementById('last-updated');
+            lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+        } catch (error) {
+            console.error('Error fetching tokens:', error);
+
+            // Show error in UI
+            document.getElementById('progress-count').textContent = 'Error loading';
+            const kingContent = document.getElementById('king-content');
+            if (kingContent) {
+                kingContent.innerHTML = '<div class="error">Failed to load king token</div>';
+            }
+            document.getElementById('token-list').innerHTML = '<div class="error">Failed to load tokens 😢<br><small>Check console for details</small></div>';
+        }
+    }
+
+    // Initial load
+    fetchTokens();
+
+    // Auto-refresh every 5 minutes
+    setInterval(fetchTokens, 5 * 60 * 1000);
+</script>
+</body>
+</html>
