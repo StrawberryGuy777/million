@@ -39,6 +39,16 @@ interface FloatingToken {
   opacity: number
 }
 
+// Move tokenLogos outside component to avoid dependency issues
+const tokenLogos = [
+  'bananan.jpeg', 'bert.png', 'catmask.jpeg', 'chill.jpeg', 'daddy.jpeg',
+  'dmaga.jpeg', 'dogeai.jpeg', 'eloniron.jpeg', 'fwog.png', 'genwealth.png',
+  'gork.jpeg', 'hoodrat.jpeg', 'house.jpeg', 'kek.jpeg', 'labubu.png',
+  'moodeng.png', 'moonpig.png', 'pepeai.jpeg', 'pnut.jpeg', 'prope.jpeg',
+  'rizz.jpeg', 'sigma.png', 'stonks.jpeg', 'titcoin.jpeg', 'troll.png',
+  'unico.jpeg', 'wif.png', 'wojak.jpeg', 'would.jpeg'
+];
+
 export default function Home() {
   const [data, setData] = useState<ApiResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,15 +60,6 @@ export default function Home() {
   const [floatingTokens, setFloatingTokens] = useState<FloatingToken[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number | null>(null)
-
-  const tokenLogos = [
-    'bananan.jpeg', 'bert.png', 'catmask.jpeg', 'chill.jpeg', 'daddy.jpeg',
-    'dmaga.jpeg', 'dogeai.jpeg', 'eloniron.jpeg', 'fwog.png', 'genwealth.png',
-    'gork.jpeg', 'hoodrat.jpeg', 'house.jpeg', 'kek.jpeg', 'labubu.png',
-    'moodeng.png', 'moonpig.png', 'pepeai.jpeg', 'pnut.jpeg', 'prope.jpeg',
-    'rizz.jpeg', 'sigma.png', 'stonks.jpeg', 'titcoin.jpeg', 'troll.png',
-    'unico.jpeg', 'wif.png', 'wojak.jpeg', 'would.jpeg'
-  ];
   
   // Initialize floating tokens
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function Home() {
     })
 
     setFloatingTokens(initialTokens)
-  }, [])
+  }, []) // No need to include tokenLogos since it's now outside the component
 
   // ADVANCED ANIMATION: Professional physics-based animation loop
   useEffect(() => {
@@ -242,8 +243,8 @@ export default function Home() {
         if (!response.ok) throw new Error('Failed to fetch tokens')
         const result = await response.json()
         setData(result)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred')
       } finally {
         setIsLoading(false)
         setLastUpdated(new Date().toLocaleTimeString())
@@ -258,7 +259,7 @@ export default function Home() {
   const handleCopyAddress = (address: string) => {
     navigator.clipboard.writeText(address)
       .then(() => toast.success("Address copied to clipboard!", { description: address }))
-      .catch(err => toast.error("Failed to copy address.", { description: "Please try again or copy manually." }));
+      .catch(() => toast.error("Failed to copy address.", { description: "Please try again or copy manually." }));
   };
 
   const handleScroll = () => {
@@ -415,87 +416,111 @@ export default function Home() {
           </Card>
 
           {/* Token List */}
-          <Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
-            <CardHeader className="border-b border-gray-700/50">
-              <CardTitle className="flex items-center gap-3">
-                <span className="text-xl sm:text-2xl text-zinc-300 font-bold">
-                  What we got so far...
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="relative">
-                <ScrollArea 
-                  className="h-[400px] pr-4"
-                  ref={tokenListRef}
-                  onScroll={handleScroll}
-                >
-                  {error ? (
-                    <div className="text-center py-12 space-y-4">
-                      <div className="text-5xl">💀</div>
-                      <div className="text-red-400 text-lg">Failed to load the graveyard</div>
-                    </div>
-                  ) : data && data.tokens.length > 0 ? (
-                    <div className="space-y-3">
-                      {data.tokens.map((token, index) => (
-                        <div 
-                          key={index} 
-                          className="group relative overflow-hidden p-3 sm:p-4 rounded-xl bg-gray-800/50 border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer"
-                          onClick={() => window.open(`https://dexscreener.com/solana/${token.mintAddress}`, '_blank')}
-                        >
-                          <div className="relative z-10 flex justify-between items-center gap-2">
-                            <div className="flex items-center space-x-3 min-w-0 flex-1">
-                              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className="font-bold text-gray-100 group-hover:text-purple-300 transition-colors text-sm sm:text-base truncate">
-                                    {token.name || 'Unknown Dead Coin'} 
-                                  </span>
-                                  {token.symbol && (
-                                    <Badge variant="secondary" className="text-xs">${token.symbol}</Badge>
-                                  )}
-                                </div>
-                                <div className="text-xs text-gray-500 group-hover:text-gray-400 truncate font-mono">
-                                  {token.mintAddress}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right ml-2 flex-shrink-0">
-                              <div className="font-mono text-xs sm:text-base font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                                {token.amount.toLocaleString()}
-                              </div>
-                              <div className="text-xs text-gray-500 hidden sm:block">tokens</div>
-                            </div>
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+<Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
+  <CardHeader className="border-b border-gray-700/50 px-3 py-4 sm:px-6 sm:py-6">
+    <CardTitle className="flex items-center gap-2 sm:gap-3">
+      <span className="text-lg sm:text-xl lg:text-2xl text-zinc-300 font-bold leading-tight">
+        What we got so far...
+      </span>
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="p-3 sm:p-4 lg:p-6">
+    <div className="relative">
+      <ScrollArea 
+        className="h-[350px] sm:h-[400px] pr-2 sm:pr-4"
+        ref={tokenListRef}
+        onScroll={handleScroll}
+      >
+        {error ? (
+          <div className="text-center py-8 sm:py-12 space-y-3 sm:space-y-4">
+            <div className="text-4xl sm:text-5xl">💀</div>
+            <div className="text-red-400 text-base sm:text-lg px-4">Failed to load the graveyard</div>
+          </div>
+        ) : data && data.tokens.length > 0 ? (
+          <div className="space-y-2 sm:space-y-3">
+            {data.tokens.map((token, index) => (
+              <div 
+                key={index} 
+                className="group relative overflow-hidden p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-800/50 border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer active:scale-[0.98] sm:active:scale-100"
+                onClick={() => window.open(`https://dexscreener.com/solana/${token.mintAddress}`, '_blank')}
+              >
+                <div className="relative z-10">
+                  {/* Mobile Layout: Stack vertically */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3">
+                    {/* Token Info Section */}
+                    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center flex-wrap gap-1 sm:gap-2 mb-1">
+                          <span className="font-bold text-gray-100 group-hover:text-purple-300 transition-colors text-sm sm:text-base truncate max-w-[200px] sm:max-w-none">
+                            {token.name || 'Unknown Dead Coin'} 
+                          </span>
+                          {token.symbol && (
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0.5 sm:px-2 sm:py-1">
+                              ${token.symbol}
+                            </Badge>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 space-y-6">
-                      {isLoading ? (
-                        <div className="space-y-4">
-                           <div className="flex justify-center space-x-2">
-                            {[0, 1, 2].map(i => <div key={i} className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}/>)}
-                          </div>
-                          <p className="text-lg text-gray-400">Searching for dead coins...</p>
+                        {/* Mobile: Show address on separate line with better truncation */}
+                        <div className="text-xs text-gray-500 group-hover:text-gray-400 font-mono break-all sm:truncate">
+                          <span className="sm:hidden">
+                            {`${token.mintAddress.slice(0, 8)}...${token.mintAddress.slice(-8)}`}
+                          </span>
+                          <span className="hidden sm:inline">
+                            {token.mintAddress}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="text-5xl">🏴‍☠️</div>
-                          <p className="text-lg text-gray-400">The graveyard is empty.</p>
-                        </div>
-                      )}
+                      </div>
                     </div>
-                  )}
-                </ScrollArea>
-                <div id="scroll-hint" className="flex items-center justify-center text-xs text-gray-600 transition-opacity duration-500 mt-3 opacity-100">
-                  <ArrowDownCircle className="w-4 h-4 mr-2 animate-bounce" />
-                  Scroll to see all
+
+                    {/* Amount Section */}
+                    <div className="flex justify-between items-center sm:block sm:text-right ml-0 sm:ml-2 flex-shrink-0">
+                      <div className="sm:hidden text-xs text-gray-500">Amount:</div>
+                      <div>
+                        <div className="font-mono text-sm sm:text-base font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                          {token.amount.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 hidden sm:block">tokens</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 sm:py-12 space-y-4 sm:space-y-6 px-4">
+            {isLoading ? (
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex justify-center space-x-2">
+                  {[0, 1, 2].map(i => 
+                    <div 
+                      key={i} 
+                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-purple-500 rounded-full animate-bounce" 
+                      style={{ animationDelay: `${i * 0.2}s` }}
+                    />
+                  )}
+                </div>
+                <p className="text-base sm:text-lg text-gray-400">Searching for dead coins...</p>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                <div className="text-4xl sm:text-5xl">🏴‍☠️</div>
+                <p className="text-base sm:text-lg text-gray-400">The graveyard is empty.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </ScrollArea>
+      <div id="scroll-hint" className="flex items-center justify-center text-xs text-gray-600 transition-opacity duration-500 mt-2 sm:mt-3 opacity-100">
+        <ArrowDownCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-bounce" />
+        <span className="hidden sm:inline">Scroll to see all</span>
+        <span className="sm:hidden">Scroll for more</span>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
           {/* Development Roadmap */}
           <Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
