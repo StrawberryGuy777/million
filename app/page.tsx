@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Crown, Trophy, ScrollText, ExternalLink, ArrowDownCircle, Bot, Zap, Rocket } from 'lucide-react'
+import { Crown, Trophy, ScrollText, ExternalLink, ArrowDownCircle, Bot, Zap} from 'lucide-react'
 import { toast, Toaster } from "sonner";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -16,7 +16,7 @@ interface Token {
   name: string
   symbol: string | null
   amount: number
-  mint: string
+  mintAddress: string
 }
 
 interface ApiResponse {
@@ -67,18 +67,19 @@ export default function Home() {
     const container = containerRef.current
     const containerRect = container.getBoundingClientRect()
     
+    // REDUCED TOKEN COUNT FOR BETTER MOBILE PERFORMANCE
     const initialTokens: FloatingToken[] = tokenLogos.slice(0, 29).map((logo, index) => {
-      const radius = 25 + Math.random() * 15 // 25-40px radius
+      const radius = 30 + Math.random() * 20 // Slightly smaller radius for mobile
       return {
         id: `token-${index}`,
         x: radius + Math.random() * (containerRect.width - radius * 2),
         y: radius + Math.random() * (containerRect.height - radius * 2),
-        vx: (Math.random() - 0.5) * 2, // Start with a bit less velocity
-        vy: (Math.random() - 0.5) * 2,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: (Math.random() - 0.5) * 1.5,
         radius: radius,
         image: logo,
         rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 0.5, // Slower rotation
+        rotationSpeed: (Math.random() - 0.5) * 0.4,
         scale: 1,
         targetScale: 1,
         opacity: 0.8 + Math.random() * 0.2
@@ -99,7 +100,6 @@ export default function Home() {
         const containerRect = containerRef.current!.getBoundingClientRect()
         const { width, height } = containerRect
 
-        // Use a mutable copy for complex physics calculations
         const newTokens = structuredClone(prevTokens)
 
         // 1. Inter-token collision pass
@@ -114,28 +114,21 @@ export default function Home() {
             const minDistance = tokenA.radius + tokenB.radius
 
             if (distance < minDistance) {
-              
               const normalX = dx / distance
               const normalY = dy / distance
-
-              // Resolve overlap to prevent sticking
               const overlap = (minDistance - distance) / 2
               tokenA.x -= overlap * normalX
               tokenA.y -= overlap * normalY
               tokenB.x += overlap * normalX
               tokenB.y += overlap * normalY
 
-              // Elastic collision using 1D formula on the normal vector
               const v1 = { x: tokenA.vx, y: tokenA.vy }
               const v2 = { x: tokenB.vx, y: tokenB.vy }
-              
               const v1n = v1.x * normalX + v1.y * normalY
               const v2n = v2.x * normalX + v2.y * normalY
-              
               const v1t = v1.x * -normalY + v1.y * normalX
               const v2t = v2.x * -normalY + v2.y * normalX
               
-              // Swap normal velocities
               tokenA.vx = v2n * normalX + v1t * -normalY
               tokenA.vy = v2n * normalY + v1t * normalX
               tokenB.vx = v1n * normalX + v2t * -normalY
@@ -147,37 +140,31 @@ export default function Home() {
         // 2. Update pass (mouse, walls, position)
         return newTokens.map(token => {
           let { x, y, vx, vy, rotation, scale } = token
-const { targetScale, rotationSpeed } = token
+          const { targetScale, rotationSpeed } = token
 
-          // Mouse Repulsion
           const dxMouse = x - mousePosition.x
           const dyMouse = y - mousePosition.y
           const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse)
-          const mouseInteractionRadius = 150
+          const mouseInteractionRadius = 120 // Reduced radius for more controlled interaction
           
           if (distMouse < mouseInteractionRadius) {
             const angle = Math.atan2(dyMouse, dxMouse)
-            // Force is stronger when closer to the mouse
-            const force = (1 - distMouse / mouseInteractionRadius) * 0.8
+            const force = (1 - distMouse / mouseInteractionRadius) * 0.6
             vx += Math.cos(angle) * force
             vy += Math.sin(angle) * force
           }
           
-          // Gentle random drift to keep things from stopping
           vx += (Math.random() - 0.5) * 0.02
           vy += (Math.random() - 0.5) * 0.02
 
-          // Friction
           vx *= 0.98
           vy *= 0.98
 
-          // Update position
           x += vx
           y += vy
 
-          // Wall bouncing with better energy conservation
           if (x <= token.radius || x >= width - token.radius) {
-            vx *= -0.9 // Lose only 10% velocity on bounce
+            vx *= -0.9
             x = Math.max(token.radius, Math.min(width - token.radius, x))
           }
           if (y <= token.radius || y >= height - token.radius) {
@@ -186,8 +173,6 @@ const { targetScale, rotationSpeed } = token
           }
           
           rotation += rotationSpeed
-
-          // Smooth scaling on hover
           const scaleDiff = targetScale - scale
           scale += scaleDiff * 0.1
 
@@ -198,7 +183,6 @@ const { targetScale, rotationSpeed } = token
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    // Start animation only if there are tokens
     if (floatingTokens.length > 0) {
         animationRef.current = requestAnimationFrame(animate)
     }
@@ -208,61 +192,41 @@ const { targetScale, rotationSpeed } = token
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [floatingTokens.length, mousePosition.x, mousePosition.y]) // Rerun effect setup if tokens are added/removed or mouse moves
+  }, [floatingTokens.length, mousePosition.x, mousePosition.y])
 
-  // Mouse interaction handlers
   const handleTokenInteraction = useCallback((tokenId: string, isHovering: boolean) => {
-    setFloatingTokens(prev => prev.map(token => {
-      if (token.id === tokenId) {
-        return {
-          ...token,
-          targetScale: isHovering ? 1.3 : 1,
-          rotationSpeed: isHovering ? token.rotationSpeed * 1.5 : token.rotationSpeed / 1.5
-        }
-      }
-      return token
-    }))
+    setFloatingTokens(prev => prev.map(token => 
+      token.id === tokenId 
+        ? { ...token, targetScale: isHovering ? 1.3 : 1 }
+        : token
+    ))
   }, [])
 
   const handleClick = useCallback((tokenId: string) => {
-    setFloatingTokens(prev => prev.map(token => {
-      if (token.id === tokenId) {
-        return {
-          ...token,
-          // Give it a more energetic push on click
-          vx: (Math.random() - 0.5) * 15,
-          vy: (Math.random() - 0.5) * 15,
-          rotationSpeed: (Math.random() - 0.5) * 5
-        }
-      }
-      return token
-    }))
+    setFloatingTokens(prev => prev.map(token => 
+      token.id === tokenId 
+        ? { ...token, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 0.5) * 15, rotationSpeed: (Math.random() - 0.5) * 5 }
+        : token
+    ))
   }, [])
 
-  // Universal mouse move handler for title and token canvas
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Title background effect
       if (titleRef.current) {
-        const mouseX = e.clientX
-        const mouseY = e.clientY
-        const traX = ((4 * mouseX) / 570) + 40
-        const traY = ((4 * mouseY) / 570) + 50
+        const mouseX = e.clientX, mouseY = e.clientY
+        const traX = ((4 * mouseX) / 570) + 40, traY = ((4 * mouseY) / 570) + 50
         titleRef.current.style.backgroundPosition = `${traX}% ${traY}%`
       }
       
-      // Update mouse position relative to the animation container
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect()
         setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top })
       }
     }
-
-    document.addEventListener('mousemove', handleMouseMove);
-
-    // Set mouse out of bounds when leaving the window to stop interaction
     const handleMouseLeave = () => setMousePosition({ x: -9999, y: -9999 });
-    document.addEventListener('mouseleave', handleMouseLeave);
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseleave', handleMouseLeave)
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
@@ -278,11 +242,8 @@ const { targetScale, rotationSpeed } = token
         if (!response.ok) throw new Error('Failed to fetch tokens')
         const result = await response.json()
         setData(result)
-        // Toast notification would go here - you can add sonner back if needed
-        console.log(`Successfully loaded ${result.tokens.length} unique meme assets.`)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
-        console.error('Data Fetch Failed:', err)
       } finally {
         setIsLoading(false)
         setLastUpdated(new Date().toLocaleTimeString())
@@ -296,24 +257,8 @@ const { targetScale, rotationSpeed } = token
 
   const handleCopyAddress = (address: string) => {
     navigator.clipboard.writeText(address)
-      .then(() => {
-        // Success! Show a success toast.
-        toast.success("Address copied to clipboard!", {
-          description: address, // Optionally show the copied address in the description
-          // You can add an action button if needed:
-          // action: {
-          //   label: "Undo",
-          //   onClick: () => console.log("Undo!"),
-          // },
-        });
-      })
-      .catch(err => {
-        // Error! Show an error toast.
-        console.error("Failed to copy address: ", err);
-        toast.error("Failed to copy address.", {
-          description: "Please try again or copy manually.",
-        });
-      });
+      .then(() => toast.success("Address copied to clipboard!", { description: address }))
+      .catch(err => toast.error("Failed to copy address.", { description: "Please try again or copy manually." }));
   };
 
   const handleScroll = () => {
@@ -322,7 +267,6 @@ const { targetScale, rotationSpeed } = token
       const scrollHint = document.getElementById('scroll-hint')
       if (scrollHint) {
         scrollHint.classList.toggle('opacity-0', scrollTop > 30)
-        scrollHint.classList.toggle('translate-y-1', scrollTop > 30)
       }
     }
   }
@@ -331,92 +275,67 @@ const { targetScale, rotationSpeed } = token
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-emerald-700 text-gray-100 relative overflow-hidden">
       <Toaster richColors position="bottom-right" theme="dark" />
 
-      <div className="relative z-10 container max-w-6xl mx-auto px-4 py-10 sm:py-12 grid gap-8">
+      <div className="relative z-10 container max-w-6xl mx-auto px-4 py-8 sm:py-12 grid gap-6 md:gap-8">
+        
         {/* Hero Section */}
+        <div className="relative bg-gradient-to-br from-gray-900/95 via-black/98 to-emerald-900/40 backdrop-blur-xl rounded-2xl border border-zinc-600/40 shadow-2xl shadow-purple-500/10 p-8 sm:p-12 md:p-20 text-center overflow-hidden">
+          <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+            {floatingTokens.map((token) => (
+              <div
+                key={token.id}
+                className="absolute pointer-events-auto cursor-pointer select-none"
+                style={{
+                  left: token.x - token.radius,
+                  top: token.y - token.radius,
+                  width: token.radius * 2,
+                  height: token.radius * 2,
+                  transform: `rotate(${token.rotation}deg) scale(${token.scale})`,
+                  opacity: token.opacity,
+                  transition: 'transform 0.1s linear, opacity 0.3s ease'
+                }}
+                onMouseEnter={() => handleTokenInteraction(token.id, true)}
+                onMouseLeave={() => handleTokenInteraction(token.id, false)}
+                onClick={() => handleClick(token.id)}
+              >
+                <Image
+                  src={`/mmw-logos/${token.image}`}
+                  alt="Token"
+                  width={token.radius * 2}
+                  height={token.radius * 2}
+                  className="w-full h-full object-cover rounded-full border-2 border-white/20 hover:border-purple-400/60 transition-all duration-300"
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
 
-        <div className="relative bg-gradient-to-br from-gray-900/95 via-black/98 to-emerald-900/40 backdrop-blur-xl rounded-2xl border border-zinc-600/40 shadow-2xl shadow-purple-500/10 p-20 text-center overflow-hidden">
-  {/* Floating Tokens Container */}
-  <div 
-    ref={containerRef}
-    className="absolute inset-0 pointer-events-none"
-    style={{ zIndex: 5 }}
-  >
-    {floatingTokens.map((token) => (
-      <div
-        key={token.id}
-        className="absolute pointer-events-auto cursor-pointer select-none"
-        style={{
-          left: token.x - token.radius,
-          top: token.y - token.radius,
-          width: token.radius * 2,
-          height: token.radius * 2,
-          transform: `rotate(${token.rotation}deg) scale(${token.scale})`,
-          opacity: token.opacity,
-          transition: 'transform 0.1s linear, opacity 0.3s ease' // Smooth scaling transition
-        }}
-        onMouseEnter={() => handleTokenInteraction(token.id, true)}
-        onMouseLeave={() => handleTokenInteraction(token.id, false)}
-        onClick={() => handleClick(token.id)}
-      >
-        
-        
-        {/* Token image */}
-        <Image
-  src={`/mmw-logos/${token.image}`}
-  alt="Token"
-  width={token.radius * 2}
-  height={token.radius * 2}
-  className="w-full h-full object-cover rounded-full border-2 border-white/20 hover:border-purple-400/60 transition-all duration-300"
-  draggable={false}
-/>
-        
-      </div>
-    ))}
-  </div>
+          <div className="relative pointer-events-none" style={{ zIndex: 20 }}>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40 rounded-3xl blur-2xl"></div>
+            <div className="relative space-y-6">
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight bg-gradient-to-r from-emerald-500 via-yellow-100 to-violet-500 inline-block text-transparent bg-clip-text" 
+                  style={{  }}>
+                Million Memes Wallet
+              </h1>
+              <div className="relative max-w-4xl mx-auto">
+                <p className="text-lg sm:text-2xl text-white/90 leading-relaxed font-medium"
+                   style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}>
+                  <span className="inline-block bg-white/10 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-xl border border-white/20 mx-1 my-1">
+                    1 Wallet.
+                  </span>
+                  <span className="inline-block text-emerald-300 font-semibold bg-emerald-500/10 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-xl border border-emerald-400/30 mx-1 my-1">
+                    1 Million Memes.
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-{/* Main content with higher z-index and text shadow backdrop */}
-<div className="relative pointer-events-none" style={{ zIndex: 20 }}>
- {/* Subtle backdrop for depth */}
- <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40 rounded-3xl blur-2xl"></div>
- 
- <div className="relative space-y-8">
-   {/* Main Title */}
-   <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight lg:text-8xl bg-gradient-to-r from-emerald-500 via-yellow-100 to-violet-500 inline-block text-transparent bg-clip-text text-shadow-2xs " 
-       style={{ 
-         
-         letterSpacing: '-0.025em',
-         fontVariationSettings: '"wght" 600',
-         WebkitFontSmoothing: 'antialiased',
-         textRendering: 'optimizeLegibility'
-       }}>
-     Million Memes Wallet
-   </h1>
-   
-   {/* Enhanced subtitle */}
-   <div className="relative max-w-4xl mx-auto">
-     <p className="text-xl sm:text-2xl text-white/90 leading-relaxed font-medium text-center"
-        style={{
-          textShadow: '0 1px 3px rgba(0,0,0,0.7)'
-        }}>
-       <span className="inline-flex items-center text-white font-semibold bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 mx-2"
-             style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
-         1 Wallet.
-       </span>
-       <span className="inline-flex items-center text-emerald-300 font-semibold bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-emerald-400/30 mx-2"
-             style={{ textShadow: '0 0 10px rgba(52, 211, 153, 0.3)' }}>
-         1 Million Memes.
-       </span>
-     </p>
-   </div>
- </div>
-</div>
-</div>
-
-        <div className="grid gap-8 md:gap-10">
+        <div className="grid gap-6 md:gap-8">
           {/* Donation Call-to-Action */}
-          <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/20 " />
-            <CardContent className="relative z-10 pt-8 pb-6 px-8">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl"/>
+            <CardContent className="relative z-10 p-6 sm:p-8">
               <div className="text-center">
                 <div className="flex justify-center mb-4">
                   <div className="relative">
@@ -424,33 +343,29 @@ const { targetScale, rotationSpeed } = token
                     <div className="absolute inset-0 w-12 h-12 border-2 border-emerald-400/30 rounded-full animate-ping" />
                   </div>
                 </div>
-                
-                <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-zinc-400 to-emerald-200 bg-clip-text text-transparent">
-                Got Dead Coins? We&apos;ll Take &apos;Em!
+                <h3 className="text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-r from-zinc-400 to-emerald-200 bg-clip-text text-transparent">
+                  Got Dead Coins? We&apos;ll Take &apos;Em!
                 </h3>
-                
-                <p className="mb-3 text-lg text-gray-300">
-                  Send us your rugged, dumped, or forgotten Solana tokens
+                <p className="mb-4 text-base text-gray-300">
+                Send us your rugged, dumped, or forgotten Solana meme tokens.
                 </p>
-                <p className="mb-6 text-sm text-gray-400">
-                Don&apos;t let it rot. Every cursed token gets us closer to 1M memes.
+                <p className="mb-4 text-base text-gray-300">
+                We&apos;re on a mission to break a world record by collecting 
+        <strong className="bg-gradient-to-r from-emerald-500 to-yellow-200 bg-clip-text text-transparent font-semibold"> 1 Million Memes in 1 Single Wallet</strong>.
                 </p>
-                
                 <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 group">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg blur-sm opacity-50 animate-pulse" />
-                    <div className="relative font-mono text-purple-300 flex-shrink-0  max-w-full  text-sm sm:text-base px-4 py-3 bg-black/80  rounded-lg border border-purple-500/50">
-                    64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy
+                  <div className="relative w-full sm:w-auto">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg blur opacity-50 animate-pulse" />
+                    <div className="relative font-mono text-purple-300 w-full text-xs sm:text-base px-4 py-3 bg-black/80 rounded-lg border border-purple-500/50 truncate">
+                      64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy
                     </div>
                   </div>
-                  
                   <Button 
                     onClick={() => handleCopyAddress('64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy')} 
-                    className="relative w-full sm:w-auto bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50"
+                    className="relative w-full cursor-pointer sm:w-auto bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
                   >
                     <ScrollText className="w-5 h-5 mr-2" />
-                    Copy & Send Dead Coins
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-cyan-400/20 rounded-lg blur-xl animate-pulse cursor-pointer" />
+                    Copy & Send
                   </Button>
                 </div>
               </div>
@@ -458,16 +373,15 @@ const { targetScale, rotationSpeed } = token
           </Card>
 
           {/* Token Counter */}
-          <Card className="relative overflow-hidden border-1 border-zinc-700/50 shadow-1xl shadow-purple-200/30 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/20">
-            <div className="absolute inset-0  " />
-            <CardContent className="relative z-10 pt-8 pb-6">
+          <Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
+            <CardContent className="relative z-10 p-6 sm:p-8">
               <div className="text-center">
                 {data ? (
                   <div className="space-y-4">
                     <div className="text-6xl sm:text-8xl font-black text-white animate-pulse">
                       {data.totalTokens.toLocaleString()}
                     </div>
-                    <div className="text-2xl bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    <div className="text-lg sm:text-2xl bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
                       / 1,000,000 Dead Coins Collected
                     </div>
                     <div className="w-full max-w-md mx-auto bg-gray-800 rounded-full h-4 overflow-hidden">
@@ -477,90 +391,83 @@ const { targetScale, rotationSpeed } = token
                       />
                     </div>
                     <p className="text-sm text-gray-500">
-                      {((data.totalTokens / 1000000) * 100).toFixed(2)}% Complete - Keep &apos;em coming! 🔥
+                      {((data.totalTokens / 1000000) * 100).toFixed(2)}% Complete
                     </p>
                   </div>
                 ) : error ? (
-                  <div className="text-red-400 space-y-2">
+                  <div className="text-red-400 space-y-2 py-8">
                     <div className="text-4xl">⚠️</div>
-                    <div>Error Loading Degen Stats</div>
+                    <div>Error Loading Stats</div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center space-y-4">
+                  <div className="flex flex-col items-center space-y-4 py-8">
                     <div className="relative">
-                      <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-                      <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 border-b-cyan-500 rounded-full animate-spin-reverse" />
+                      <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
                     </div>
                     <p className="text-lg text-gray-400">Loading degen statistics...</p>
                   </div>
                 )}
               </div>
-              <div className="mt-4 text-center text-sm text-gray-500">
-                {isLoading ? 'Scanning the blockchain for dead coins...' : `Last updated: ${lastUpdated}`}
+              <div className="mt-4 text-center text-xs sm:text-sm text-gray-500">
+                {isLoading ? 'Scanning the blockchain...' : `Last updated: ${lastUpdated}`}
               </div>
             </CardContent>
           </Card>
 
           {/* Token List */}
-          <Card className="bg-gradient-to-br from-zinc-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/30">
-            <CardHeader className="border-b border-gray-700/50 ">
+          <Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
+            <CardHeader className="border-b border-gray-700/50">
               <CardTitle className="flex items-center gap-3">
-
                 <span className="text-xl sm:text-2xl text-zinc-300 font-bold">
-                  what we got so far...
+                  What we got so far...
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="relative">
                 <ScrollArea 
-                  className="h-[400px] pr-4 px-4"
+                  className="h-[400px] pr-4"
                   ref={tokenListRef}
                   onScroll={handleScroll}
                 >
                   {error ? (
                     <div className="text-center py-12 space-y-4">
-                      <div className="text-6xl">💀</div>
+                      <div className="text-5xl">💀</div>
                       <div className="text-red-400 text-lg">Failed to load the graveyard</div>
-                      <p className="text-sm text-red-500/70">The blockchain gods are not pleased</p>
                     </div>
                   ) : data && data.tokens.length > 0 ? (
                     <div className="space-y-3">
                       {data.tokens.map((token, index) => (
                         <div 
                           key={index} 
-                          className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-r from-gray-800/50 to-gray-700/50  border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 transform  hover:shadow-lg hover:shadow-purple-500/20"
+                          className="group relative overflow-hidden p-3 sm:p-4 rounded-xl bg-gray-800/50 border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer"
+                          onClick={() => window.open(`https://dexscreener.com/solana/${token.mintAddress}`, '_blank')}
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          
-                          <div className="relative z-10 flex justify-between items-center">
-                            <div className="flex items-center space-x-4 min-w-0 flex-1">
-                              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-200 to-emerald-500 animate-pulse flex-shrink-0" />
-                              
+                          <div className="relative z-10 flex justify-between items-center gap-2">
+                            <div className="flex items-center space-x-3 min-w-0 flex-1">
+                              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
-                                  <span className="font-bold text-gray-100 group-hover:text-purple-300 transition-colors text-base sm:text-lg truncate">
+                                  <span className="font-bold text-gray-100 group-hover:text-purple-300 transition-colors text-sm sm:text-base truncate">
                                     {token.name || 'Unknown Dead Coin'} 
                                   </span>
                                   {token.symbol && (
-                                    <Badge className="bg-gray-700/50 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                                      ${token.symbol}
-                                    </Badge>
+                                    <Badge variant="secondary" className="text-xs">${token.symbol}</Badge>
                                   )}
                                 </div>
                                 <div className="text-xs text-gray-500 group-hover:text-gray-400 truncate font-mono">
-                                  {token.mint || 'No mint address'}
+                                  {token.mintAddress}
                                 </div>
                               </div>
                             </div>
-                            
-                            <div className="text-right ml-4">
-                              <div className="font-mono text-sm sm:text-base font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                            <div className="text-right ml-2 flex-shrink-0">
+                              <div className="font-mono text-xs sm:text-base font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                                 {token.amount.toLocaleString()}
                               </div>
-                              <div className="text-xs text-gray-500">tokens</div>
+                              <div className="text-xs text-gray-500 hidden sm:block">tokens</div>
                             </div>
                           </div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
                       ))}
                     </div>
@@ -568,202 +475,121 @@ const { targetScale, rotationSpeed } = token
                     <div className="text-center py-12 space-y-6">
                       {isLoading ? (
                         <div className="space-y-4">
-                          <div className="flex justify-center space-x-2">
-                            {[0, 1, 2].map(i => (
-                              <div 
-                                key={i}
-                                className="w-4 h-4 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full animate-bounce"
-                                style={{ animationDelay: `${i * 0.2}s` }}
-                              />
-                            ))}
+                           <div className="flex justify-center space-x-2">
+                            {[0, 1, 2].map(i => <div key={i} className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}/>)}
                           </div>
                           <p className="text-lg text-gray-400">Searching for dead coins...</p>
-                          <p className="text-sm text-gray-600">Scanning wallets across Solana...</p>
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <div className="text-6xl">🏴‍☠️</div>
-                          <div>
-                            <p className="text-xl text-gray-400 mb-2">The graveyard awaits its first victim</p>
-                            <p className="text-sm text-gray-600">Send us your dead coins to get started!</p>
-                          </div>
+                          <div className="text-5xl">🏴‍☠️</div>
+                          <p className="text-lg text-gray-400">The graveyard is empty.</p>
                         </div>
                       )}
                     </div>
                   )}
                 </ScrollArea>
-                
-                <div 
-                  id="scroll-hint" 
-                  className="flex items-center justify-center text-sm text-gray-600 transition-all duration-500 mt-3 opacity-100"
-                >
+                <div id="scroll-hint" className="flex items-center justify-center text-xs text-gray-600 transition-opacity duration-500 mt-3 opacity-100">
                   <ArrowDownCircle className="w-4 h-4 mr-2 animate-bounce" />
-                  Scroll to see all the carnage
+                  Scroll to see all
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* ==================== Development Roadmap ==================== */}
-<Card className="bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-purple-500/10 rounded-2xl">
-  <CardHeader className="border-b border-white/10 p-6">
-    <CardTitle className="flex items-center gap-4">
-      <div className="p-2  rounded-lg border border-white/10">
-        <GiCook className="w-6 h-6 text-emerald-300" />
-      </div>
-      <span className="text-xl sm:text-2xl text-zinc-100 font-bold tracking-tight">
-        dev is cooking...
-      </span>
-    </CardTitle>
-    
-  </CardHeader>
-  <CardContent className="pt-8 p-6">
-    <div className="grid gap-6 md:grid-cols-3">
-      {[
-         {
-
-                              title: "King of the Wallet",
-          
-                              description: "See which token rules them all! We will crown the meme with the highest USD value as the true king of our collection.",
-          
-                              icon: Crown,
-          
-
-          
-                              gradient: "from-teal-500 to-pink-500"
-          
-                            },
-          
-                            {
-          
-                              title: "Degen Alerts",
-          
-                              description: "Real-time Twitter notifications when a new meme joins the wallet.",
-          
-                              icon: Bot,
-          
-
-          
-                              gradient: "from-teal-500 to-pink-500"
-          
-                            },
-          
-                            {
-          
-                              title: "Top Donors",
-          
-                              description: "A leaderboard showcasing the most generous addresses who contributed the most tokens to our collection.",
-          
-                              icon: Trophy,
-          
-
-          
-                              gradient: "from-teal-500 to-pink-500"
-          
-                            }
-      ].map((feature, idx) => (
-        <Card 
-          key={idx} 
-          className="group relative overflow-hidden bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:border-white/20 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10"
-        >
-          {/* Subtle gradient glow on hover */}
-          <div className={`absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-35 transition-opacity duration-500 blur-3xl`} />
-          
-          <CardContent className="relative p-6 text-center flex flex-col h-full">
-            <div className="mb-6 flex-grow-0">
-              <div className="inline-flex p-3 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/20 transition-colors">
-                <feature.icon className="w-8 h-8 text-zinc-300 group-hover:text-white transition-transform duration-300 group-hover:scale-110" />
+          {/* Development Roadmap */}
+          <Card className="relative overflow-hidden border border-zinc-700/50 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl">
+            <CardHeader className="border-b border-white/10 p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                  <GiCook className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
+                </div>
+                <span className="text-lg sm:text-2xl text-zinc-100 font-bold">
+                  Dev is cooking...
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  { title: "King of the Wallet", description: "The meme with the highest USD value will be crowned the king of our collection.", icon: Crown },
+                  { title: "Degen Alerts", description: "Real-time Twitter notifications when a new meme joins the wallet.", icon: Bot },
+                  { title: "Top Donors", description: "A leaderboard showcasing the most generous addresses who contributed tokens.", icon: Trophy }
+                ].map((feature, idx) => (
+                  <Card key={idx} className="group relative overflow-hidden bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]">
+                    <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-to-br from-teal-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-3xl" />
+                    <CardContent className="relative p-6 text-center flex flex-col h-full">
+                      <div className="mb-4">
+                        <div className="inline-flex p-3 rounded-xl bg-white/5 border border-white/10">
+                          <feature.icon className="w-7 h-7 text-zinc-300 group-hover:text-white transition-transform duration-300" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold mb-2 text-base sm:text-lg text-zinc-100">
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm text-zinc-400 flex-grow">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </div>
-            
-            <h3 className="font-bold mb-3 text-lg text-zinc-100">
-              {feature.title}
-            </h3>
-            
-            <p className="text-sm text-zinc-400 mb-6 flex-grow">
-              {feature.description}
-            </p>
-            
-            <div className="mt-auto">
-
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </CardContent>
-</Card>
+            </CardContent>
+          </Card>
 
           {/* Footer */}
-          <Card className="text-center bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/30">
-            <CardContent className="pt-8 pb-6 px-6">
-              <div className="space-y-6">
-                <div>
-                  <p className="mb-2 text-lg text-gray-300 font-semibold">
-                  Vibing with this? Toss a coin to dev 🧙‍♂️
-                  </p>
-                  <p className="mb-6 text-sm text-gray-500">
-                  This is all built out of pure degen love — but hosting ain&apos;t free, and beer ain&apos;t cheap.
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                    <div className="relative font-mono text-purple-300 truncate text-sm px-4 py-3 bg-black/80 backdrop-blur-sm rounded-lg border border-purple-500/50">
-                    64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy
+          <Card className="text-center bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50">
+            <CardContent className="p-6 sm:p-8 space-y-6">
+              <div>
+                <p className="mb-2 text-base sm:text-lg text-gray-300 font-semibold">
+                  Vibing with this? Toss a coin to the dev 🧙‍♂️
+                </p>
+                <p className="mb-4 text-xs sm:text-sm text-gray-500">
+                  This is built out of pure degen love — hosting ain't free.
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="relative w-full sm:w-auto">
+                    <div className="relative font-mono text-purple-300 w-full text-xs sm:text-base px-4 py-3 bg-black/80 rounded-lg border border-purple-500/50 truncate">
+                      64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy
                     </div>
                   </div>
-                  
-                  <Button 
-                    onClick={() => handleCopyAddress('64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy')} 
-                    className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                  >
-                    <ScrollText className="w-4 h-4 mr-2" />
-                    Copy Donation Address
-                  </Button>
+                <Button 
+                  onClick={() => handleCopyAddress('64EC7dfQmatv6pQNrniU1RP4sJmzfhKN5SMeirhiupfy')} 
+                  className="w-full cursor-pointer sm:w-auto bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-lg transition-all"
+                >
+                  <ScrollText className="w-4 h-4 mr-2" />
+                  Copy Address
+                </Button>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-2">
+                <a href="https://x.com/MemesTo1M" target="_blank" rel="noopener noreferrer" className="group flex items-center text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+                  <FaSquareXTwitter className="w-5 h-5 mr-2" />
+                  <span className="font-semibold">@MemesTo1M</span>
+                  <ExternalLink className="w-3 h-3 ml-1 opacity-60" />
+                </a>
+                <span className="text-gray-600 hidden sm:block">•</span>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Zap className="w-4 h-4 mr-2 text-yellow-400" />
+                  Stay tuned for the 1M meme goal.
                 </div>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-                  <a 
-                    href="https://x.com/MemesTo1M"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center text-cyan-400 hover:text-cyan-300 transition-colors"
-                  >
-                    <FaSquareXTwitter className="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                    <span className="font-semibold">@MemesTo1M</span>
-                    <ExternalLink className="w-3 h-3 ml-1 opacity-60 group-hover:opacity-90 transition-opacity" />
-                  </a>
-                  
-                  <span className="text-gray-600 hidden sm:block">•</span>
-                  
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Zap className="w-4 h-4 mr-2 text-yellow-400" />
-                    Stay tuned to celebrate the 1M memes goal.
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-600 space-y-1">
-                  <div>Data last updated: {lastUpdated || 'Initializing the chaos...'}</div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <span>Powered by</span>
-                    <span className="font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Solana</span>
-                    <span>•</span>
-                    <span>Built for</span>
-                    <span className="font-bold bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">Rekt Degens</span>
-                  </div>
+              </div>
+              
+              <div className="text-xs text-gray-600 space-y-1 pt-4 border-t border-gray-800">
+                <div className="flex items-center justify-center space-x-2">
+                  <span>Powered by</span>
+                  <span className="font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Solana</span>
+                  <span>•</span>
+                  <span>Built for</span>
+                  <span className="font-bold bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">Rekt Degens</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-      
-      {/* Custom Styles */}
-      <style jsx>{`
-
-`}</style>
     </main>
   )
 }
