@@ -272,7 +272,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-emerald-700 text-gray-100 relative overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-gray-100 relative overflow-hidden">
       <Toaster richColors position="bottom-right" theme="dark" />
 
       <div className="relative z-10 container max-w-6xl mx-auto px-4 py-8 sm:py-12 grid gap-6 md:gap-8">
@@ -545,7 +545,7 @@ export default function Home() {
                   Vibing with this? Toss a coin to the dev 🧙‍♂️
                 </p>
                 <p className="mb-4 text-xs sm:text-sm text-gray-500">
-                  This is built out of pure degen love — hosting ain't free.
+                  This is built out of pure degen love — hosting ain&apos;t free.
                 </p>
               </div>
               
