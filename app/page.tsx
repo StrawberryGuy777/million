@@ -10,6 +10,7 @@ import { Crown, Trophy, ScrollText, ExternalLink, ArrowDownCircle, Bot, Zap, Roc
 import { toast, Toaster } from "sonner";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { GiReceiveMoney } from "react-icons/gi";
+import { GiCook } from "react-icons/gi";
 
 interface Token {
   name: string
@@ -51,12 +52,14 @@ export default function Home() {
   const animationRef = useRef<number | null>(null)
 
   const tokenLogos = [
-    'bananan.jpeg', 'bert.png', 'chill.jpeg', 'daddy.jpeg', 'dmaga.jpeg',
-    'fwog.png', 'gork.jpeg', 'house.jpeg', 'kek.jpeg', 'moodeng.png',
-    'moonpig.png', 'pepeai.jpeg', 'pnut.jpeg', 'prope.jpeg', 'rizz.jpeg',
-    'sigma.png', 'titcoin.jpeg', 'troll.png', 'unico.jpeg', 'would.jpeg'
-  ]
-
+    'bananan.jpeg', 'bert.png', 'catmask.jpeg', 'chill.jpeg', 'daddy.jpeg',
+    'dmaga.jpeg', 'dogeai.jpeg', 'eloniron.jpeg', 'fwog.png', 'genwealth.png',
+    'gork.jpeg', 'hoodrat.jpeg', 'house.jpeg', 'kek.jpeg', 'labubu.png',
+    'moodeng.png', 'moonpig.png', 'pepeai.jpeg', 'pnut.jpeg', 'prope.jpeg',
+    'rizz.jpeg', 'sigma.png', 'stonks.jpeg', 'titcoin.jpeg', 'troll.png',
+    'unico.jpeg', 'wif.png', 'wojak.jpeg', 'would.jpeg'
+  ];
+  
   // Initialize floating tokens
   useEffect(() => {
     if (!containerRef.current) return
@@ -64,7 +67,7 @@ export default function Home() {
     const container = containerRef.current
     const containerRect = container.getBoundingClientRect()
     
-    const initialTokens: FloatingToken[] = tokenLogos.slice(0, 15).map((logo, index) => {
+    const initialTokens: FloatingToken[] = tokenLogos.slice(0, 29).map((logo, index) => {
       const radius = 25 + Math.random() * 15 // 25-40px radius
       return {
         id: `token-${index}`,
@@ -325,13 +328,13 @@ const { targetScale, rotationSpeed } = token
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-violet-700 text-gray-100 relative overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-emerald-700 text-gray-100 relative overflow-hidden">
       <Toaster richColors position="bottom-right" theme="dark" />
 
       <div className="relative z-10 container max-w-6xl mx-auto px-4 py-10 sm:py-12 grid gap-8">
         {/* Hero Section */}
 
-        <div className="relative bg-gradient-to-br from-gray-900/95 via-black/98 to-violet-900/40 backdrop-blur-xl rounded-2xl border border-purple-400/40 shadow-2xl shadow-purple-500/30 p-20 text-center overflow-hidden">
+        <div className="relative bg-gradient-to-br from-gray-900/95 via-black/98 to-emerald-900/40 backdrop-blur-xl rounded-2xl border border-zinc-600/40 shadow-2xl shadow-purple-500/10 p-20 text-center overflow-hidden">
   {/* Floating Tokens Container */}
   <div 
     ref={containerRef}
@@ -371,42 +374,42 @@ const { targetScale, rotationSpeed } = token
     ))}
   </div>
 
-  {/* Main content with higher z-index and text shadow backdrop */}
-  <div className="relative pointer-events-none" style={{ zIndex: 20 }}>
-    {/* Background text shadow for better contrast */}
-    <div className="absolute inset-0 bg-black/30 rounded-2xl blur-xl"></div>
-    
-    <div className="relative">
-      <h1 className="text-5xl sm:text-7xl font-black tracking-tight lg:text-8xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 drop-shadow-2xl" 
-          style={{ 
-            textShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.9), 2px 2px 4px rgba(0,0,0,1)',
-            filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))'
-          }}>
-        Million Memes Wallet
-      </h1>
-      
-      {/* Enhanced subtitle with better contrast */}
-      <div className="relative">
-      <div className="absolute inset-0 bg-black/50 rounded-lg blur-md"></div>
-      <p className="relative text-xl sm:text-2xl text-white max-w-3xl mx-auto leading-relaxed font-medium px-6 py-4 whitespace-nowrap"
-         style={{
-           textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
-           filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))'
-         }}>
-        The ultimate graveyard for your{' '}
-        <span className="text-red-300 font-bold bg-black/40 px-2 py-1 rounded-md border border-red-500/30"
-              style={{ textShadow: '0 0 15px rgba(239, 68, 68, 0.5)' }}>
-          dead coins
-        </span>{' '}
-        and{' '}
-        <span className="text-cyan-300 font-bold bg-black/40 px-2 py-1 rounded-md border border-cyan-500/30"
-              style={{ textShadow: '0 0 15px rgba(103, 232, 249, 0.5)' }}>
-          forgotten gems
-        </span>.
-      </p>
-    </div>
-    </div>
-  </div>
+{/* Main content with higher z-index and text shadow backdrop */}
+<div className="relative pointer-events-none" style={{ zIndex: 20 }}>
+ {/* Subtle backdrop for depth */}
+ <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40 rounded-3xl blur-2xl"></div>
+ 
+ <div className="relative space-y-8">
+   {/* Main Title */}
+   <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight lg:text-8xl bg-gradient-to-r from-emerald-500 via-yellow-100 to-violet-500 inline-block text-transparent bg-clip-text text-shadow-2xs " 
+       style={{ 
+         
+         letterSpacing: '-0.025em',
+         fontVariationSettings: '"wght" 600',
+         WebkitFontSmoothing: 'antialiased',
+         textRendering: 'optimizeLegibility'
+       }}>
+     Million Memes Wallet
+   </h1>
+   
+   {/* Enhanced subtitle */}
+   <div className="relative max-w-4xl mx-auto">
+     <p className="text-xl sm:text-2xl text-white/90 leading-relaxed font-medium text-center"
+        style={{
+          textShadow: '0 1px 3px rgba(0,0,0,0.7)'
+        }}>
+       <span className="inline-flex items-center text-white font-semibold bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 mx-2"
+             style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
+         1 Wallet.
+       </span>
+       <span className="inline-flex items-center text-emerald-300 font-semibold bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-emerald-400/30 mx-2"
+             style={{ textShadow: '0 0 10px rgba(52, 211, 153, 0.3)' }}>
+         1 Million Memes.
+       </span>
+     </p>
+   </div>
+ </div>
+</div>
 </div>
 
         <div className="grid gap-8 md:gap-10">
@@ -417,12 +420,12 @@ const { targetScale, rotationSpeed } = token
               <div className="text-center">
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <GiReceiveMoney className="w-12 h-12 text-red-500 animate-spin-slow" />
-                    <div className="absolute inset-0 w-12 h-12 border-2 border-red-400/30 rounded-full animate-ping" />
+                    <GiReceiveMoney className="w-12 h-12 text-emerald-500 animate-spin-slow" />
+                    <div className="absolute inset-0 w-12 h-12 border-2 border-emerald-400/30 rounded-full animate-ping" />
                   </div>
                 </div>
                 
-                <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-zinc-400 to-orange-400 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-zinc-400 to-emerald-200 bg-clip-text text-transparent">
                 Got Dead Coins? We&apos;ll Take &apos;Em!
                 </h3>
                 
@@ -430,7 +433,7 @@ const { targetScale, rotationSpeed } = token
                   Send us your rugged, dumped, or forgotten Solana tokens
                 </p>
                 <p className="mb-6 text-sm text-gray-400">
-                Every shitcoin tells a story. Let&apos;s collect them all and reach 1M tokens!
+                Don&apos;t let it rot. Every cursed token gets us closer to 1M memes.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 group">
@@ -455,13 +458,13 @@ const { targetScale, rotationSpeed } = token
           </Card>
 
           {/* Token Counter */}
-          <Card className="relative overflow-hidden border-1 border-teal-500/50 shadow-1xl shadow-purple-200/30 bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 via-cyan-600/5 to-pink-600/5 " />
+          <Card className="relative overflow-hidden border-1 border-zinc-700/50 shadow-1xl shadow-purple-200/30 bg-gradient-to-br from-gray-900/90 via-black/95 to-violet-900/30 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/20">
+            <div className="absolute inset-0  " />
             <CardContent className="relative z-10 pt-8 pb-6">
               <div className="text-center">
                 {data ? (
                   <div className="space-y-4">
-                    <div className="text-6xl sm:text-8xl font-black bg-gradient-to-r from-purple-400 via-teal-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+                    <div className="text-6xl sm:text-8xl font-black text-white animate-pulse">
                       {data.totalTokens.toLocaleString()}
                     </div>
                     <div className="text-2xl bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
@@ -499,12 +502,12 @@ const { targetScale, rotationSpeed } = token
           </Card>
 
           {/* Token List */}
-          <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/30">
+          <Card className="bg-gradient-to-br from-zinc-900/90 to-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/30">
             <CardHeader className="border-b border-gray-700/50 ">
               <CardTitle className="flex items-center gap-3">
 
-                <span className="text-2xl sm:text-3xl text-zinc-300 font-bold">
-                  What we got so far... 💀
+                <span className="text-xl sm:text-2xl text-zinc-300 font-bold">
+                  what we got so far...
                 </span>
               </CardTitle>
             </CardHeader>
@@ -526,13 +529,13 @@ const { targetScale, rotationSpeed } = token
                       {data.tokens.map((token, index) => (
                         <div 
                           key={index} 
-                          className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-r from-gray-800/50 to-gray-700/50 hover:from-purple-800/30 hover:to-cyan-800/30 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/20"
+                          className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-r from-gray-800/50 to-gray-700/50  border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 transform  hover:shadow-lg hover:shadow-purple-500/20"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           
                           <div className="relative z-10 flex justify-between items-center">
                             <div className="flex items-center space-x-4 min-w-0 flex-1">
-                              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-red-500 to-pink-500 animate-pulse flex-shrink-0" />
+                              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-200 to-emerald-500 animate-pulse flex-shrink-0" />
                               
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
@@ -605,11 +608,11 @@ const { targetScale, rotationSpeed } = token
 <Card className="bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-purple-500/10 rounded-2xl">
   <CardHeader className="border-b border-white/10 p-6">
     <CardTitle className="flex items-center gap-4">
-      <div className="p-2 bg-purple-500/10 rounded-lg border border-white/10">
-        <Rocket className="w-6 h-6 text-purple-300" />
+      <div className="p-2  rounded-lg border border-white/10">
+        <GiCook className="w-6 h-6 text-emerald-300" />
       </div>
-      <span className="text-2xl sm:text-3xl text-zinc-100 font-bold tracking-tight">
-        under cooking...
+      <span className="text-xl sm:text-2xl text-zinc-100 font-bold tracking-tight">
+        dev is cooking...
       </span>
     </CardTitle>
     
@@ -619,13 +622,13 @@ const { targetScale, rotationSpeed } = token
       {[
          {
 
-                              title: "Coin of Shame Hall",
+                              title: "King of the Wallet",
           
-                              description: "Showcase the biggest rugpulls and worst performers.",
+                              description: "See which token rules them all! We will crown the meme with the highest USD value as the true king of our collection.",
           
                               icon: Crown,
           
-                              badgeText: "Coming Soon",
+
           
                               gradient: "from-teal-500 to-pink-500"
           
@@ -633,13 +636,13 @@ const { targetScale, rotationSpeed } = token
           
                             {
           
-                              title: "Auto Degen Alerts",
+                              title: "Degen Alerts",
           
-                              description: "Real-time Twitter notifications when someone sends us their bags. Maximum loyalty!",
+                              description: "Real-time Twitter notifications when a new meme joins the wallet.",
           
                               icon: Bot,
           
-                              badgeText: "In Development",
+
           
                               gradient: "from-teal-500 to-pink-500"
           
@@ -647,13 +650,13 @@ const { targetScale, rotationSpeed } = token
           
                             {
           
-                              title: "Top Bag Holders",
+                              title: "Top Donors",
           
-                              description: "Leaderboard of the biggers donors who contributed the most dead coins. Wear your L with pride!",
+                              description: "A leaderboard showcasing the most generous addresses who contributed the most tokens to our collection.",
           
                               icon: Trophy,
           
-                              badgeText: "Epic Feature",
+
           
                               gradient: "from-teal-500 to-pink-500"
           
@@ -682,9 +685,7 @@ const { targetScale, rotationSpeed } = token
             </p>
             
             <div className="mt-auto">
-              <Badge variant="outline" className="border-white/20 bg-white/5 text-zinc-300 px-3 py-1 text-xs font-medium">
-                {feature.badgeText}
-              </Badge>
+
             </div>
           </CardContent>
         </Card>
@@ -699,10 +700,10 @@ const { targetScale, rotationSpeed } = token
               <div className="space-y-6">
                 <div>
                   <p className="mb-2 text-lg text-gray-300 font-semibold">
-                    Enjoying the chaos? Support the madness! 🔥
+                  Vibing with this? Toss a coin to dev 🧙‍♂️
                   </p>
                   <p className="mb-6 text-sm text-gray-500">
-                    Your donations help us build the ultimate dead coin empire
+                  This is all built out of pure degen love — but hosting ain&apos;t free, and beer ain&apos;t cheap.
                   </p>
                 </div>
                 
