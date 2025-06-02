@@ -313,7 +313,7 @@ export default function Home() {
           <div className="relative pointer-events-none" style={{ zIndex: 20 }}>
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40 rounded-3xl blur-2xl"></div>
             <div className="relative space-y-6">
-              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight bg-gradient-to-r from-emerald-500 via-yellow-100 to-violet-500 inline-block text-transparent bg-clip-text" 
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight bg-gradient-to-r from-emerald-500 via-yellow-100 to-violet-500 inline-block text-transparent bg-clip-text backdrop-blur-sm rounded-xl " 
                   style={{  }}>
                 Million Memes Wallet
               </h1>
